@@ -9,6 +9,7 @@ import com.winter.utils.StringUtils;
 import net.sf.mpxj.*;
 import net.sf.mpxj.mpp.MPPReader;
 import net.sf.mpxj.mspdi.MSPDIWriter;
+import net.sf.mpxj.reader.UniversalProjectReader;
 import net.sf.mpxj.writer.ProjectWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 /**
@@ -79,6 +82,8 @@ public class ProjectServiceImpl implements ProjectService {
                     pro.setLevel(levelNum);
                     pro.setTaskName(tasks.get(i).getName());
                     pro.setDurationDate(tasks.get(i).getDuration().toString());
+//                    pro.setStartDate(local2date(tasks.get(i).getStart()));
+//                    pro.setEndDate(local2date(tasks.get(i).getFinish()));
                     pro.setStartDate(tasks.get(i).getStart());
                     pro.setEndDate(tasks.get(i).getFinish());
                     pro.setResource(tasks.get(i).getResourceGroup());
@@ -109,6 +114,8 @@ public class ProjectServiceImpl implements ProjectService {
         pro.setImportTime(new Date());
         pro.setBatchNum(project.getBatchNum());
         pro.setDurationDate(task.getDuration().toString());
+//        pro.setStartDate(local2date(rs.getStart()));
+//        pro.setEndDate(local2date(rs.getFinish()));
         pro.setStartDate(rs.getStart());
         pro.setEndDate(rs.getFinish());
         String resource = "";
@@ -141,17 +148,24 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public void writeMppFileToDB(String fileLocation, String batchNum, File file) {
         try {
-            MPPReader mppRead = new MPPReader();
-            ProjectFile pf = mppRead.read(file);
+//            ProjectFile pf = mppRead.read(file);
+            UniversalProjectReader universalProjectReader = new UniversalProjectReader();
+            ProjectFile pf =  universalProjectReader.read(file);
+
             List<Project> projects = projectMapper.getProjectsByBatchNum(batchNum);
-            writeChildrenTaskToObj(projects, ROOT_LEVEL_NUM, pf.addTask(), null);
+            writeChildrenTaskToObj(projects, ROOT_LEVEL_NUM, pf, pf.addTask(), null);
 
             //生成临时xml文件
             ProjectWriter writer = new MSPDIWriter();
             long time = System.currentTimeMillis();
+            String xmlPath = "D:\\tmp\\test\\开办新公司"+".xml";
 
-            String xmlPath = "D:\\tmp\\开办新公司11"+time+".xml";
-            writer.write(pf, xmlPath);
+            try{
+                writer.write(pf, xmlPath);
+            }catch(IOException ioe){
+                throw ioe;
+            }
+
 
             // 将xml文件转换成Mpp文件
             String mppPath = "D:\\tmp\\test\\开办新公司" + time + ".mpp";
@@ -185,18 +199,49 @@ public class ProjectServiceImpl implements ProjectService {
 //		activexComponent.invoke("Quit");
     }
 
-    public void writeResourceAssignmentToObj(Project pro, int parentId, Task parentTask){
+    public void writeResourceAssignmentToObj(Project pro,ProjectFile pf, int parentId, Task parentTask){
 
         Task task = parentTask.addTask();
+        // Let's create an alias for TEXT1
+        CustomFieldContainer customFields = pf.getCustomFields();
+        CustomField customField = customFields.getCustomField(TaskField.TEXT1);
+        customField.setAlias("中文描述");
+        task.setText(10, "文本10");
         task.setName(pro.getTaskName());
-        task.setDuration(Duration.getInstance(5, TimeUnit.DAYS));
+        task.setText(1, "中文描述-content");
+
+        task.setPercentageComplete(70.0);
+        task.setPercentageWorkComplete(90);
+
+        task.setDuration(Duration.getInstance(13, TimeUnit.DAYS));
+        // 设置基准线
+//        task.setBaselineStart(pro.getStartDate());
+//        task.setBaselineFinish(pro.getEndDate());
+
+//        task.setStart(date2local(pro.getStartDate()));
+//        task.setFinish(date2local(pro.getEndDate()));
         task.setStart(pro.getStartDate());
         task.setFinish(pro.getEndDate());
         task.setResourceGroup(pro.getResource());
         task.setOutlineLevel(parentTask.getOutlineLevel() + 1);
         task.setUniqueID(parentTask.getUniqueID() + 1);
         task.setID(parentTask.getID() + 1);
+
+
     }
+
+    public LocalDateTime date2local(Date date){
+         return date.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+    }
+    public Date local2date(LocalDateTime localDateTime){
+        return  Date.from(
+                localDateTime.atZone(ZoneId.systemDefault())
+                        .toInstant());
+    }
+
+
     //
 //    public void writeResourceAssignmentToObj(Project pro, int parentId, Task parentTask) {
 //
@@ -221,7 +266,7 @@ public class ProjectServiceImpl implements ProjectService {
 ////        task.setBaselineStart(pro.getStartDate());
 ////        task.setBaselineFinish(pro.getEndDate());
 //    }
-    public void writeChildrenTaskToObj(List<Project> projects, int levelNum, Task parentTask, Integer parentId) {
+    public void writeChildrenTaskToObj(List<Project> projects, int levelNum, ProjectFile pf, Task parentTask, Integer parentId) {
         //首先从第一层开始读取
         List<Project> subProjects = getSubProjects(projects, parentId, levelNum);
 
@@ -229,17 +274,33 @@ public class ProjectServiceImpl implements ProjectService {
             int currentLevelNum = levelNum;
             //然后利用parentId进行进一步的读取,并且这个可以进行判断是否是最底层
             List<Project> childrenList = getSubProjects(projects, project.getProjId(), currentLevelNum + 1);
+            CustomFieldContainer customFields = pf.getCustomFields();
+            customFields.stream().forEach(e -> System.out.println(e.getAlias()));
+            CustomField customField = customFields.getCustomField(TaskField.TEXT1);
+            System.out.println("aaaaaaaaaaaaaaaaaa"+customField.getAlias());
+
+            customField.setAlias("中文描述");
             //这个判断很重要，如果size为0，说明当前的层级是最底层
             if (childrenList.size() > 0) {
                 //说明是父任务，进行父任务的写入，然后进行下一次递归
                 Task task = parentTask.addTask();
+                task.setText(10, "文本10");
                 task.setName(project.getTaskName());
+                System.out.println("-----------------------------");
+
+                task.setText(1, "中文描述-content");
+                task.setPercentageComplete(30.0);
+                task.setPercentageWorkComplete(70);
                 // 任务周期
-                task.setDuration(Duration.getInstance(5, TimeUnit.DAYS));
+                task.setDuration(Duration.getInstance(13, TimeUnit.DAYS));
                 // 任务开始日期
-                task.setStart(project.getStartDate());
+//                task.setStart(date2local(project.getStartDate()));
+
+                task.setStart((project.getStartDate()));
                 // 任务结束日期
-                task.setFinish(project.getEndDate());
+//                task.setFinish(date2local(project.getEndDate()));
+
+                task.setFinish((project.getEndDate()));
                 if (currentLevelNum == 1) {//如果是读取第一层
                     task.setOutlineLevel(1);
                     task.setUniqueID(1);
@@ -254,9 +315,9 @@ public class ProjectServiceImpl implements ProjectService {
                 }
                 currentLevelNum++;
                 //进行递归写入
-                writeChildrenTaskToObj(projects, currentLevelNum, task, project.getProjId());
+                writeChildrenTaskToObj(projects, currentLevelNum, pf, task, project.getProjId());
             } else {//说明当前层级为最底层
-                writeResourceAssignmentToObj(project, project.getParentId(), parentTask);
+                writeResourceAssignmentToObj(project, pf, project.getParentId(), parentTask);
             }
 
         }

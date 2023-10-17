@@ -23,10 +23,10 @@ public class ExpProject {
 
 	public static void main(String[] args) throws Exception {
 		//生成Xml文件
-//		String xmlPath = "D:\\tmp\\mppTest.xml";
-//		createXmlFile(xmlPath);
+		String xmlPath = "D:\\tmp\\mppTest.xml";
+		createXmlFile(xmlPath);
 		//将生成的Xml文件转换成mpp文件
-		String xmlPath = "D:\\tmp\\project基础demo.xml";
+//		String xmlPath = "D:\\tmp\\project基础demo.xml";
 
 		String mppPath = "D:\\tmp\\mppTest44.mpp";
 		exportProjectToMpp(xmlPath, mppPath);
@@ -41,8 +41,8 @@ public class ExpProject {
 		Task task = pf.addTask();
 		task.setEffortDriven(true);
 		task.setCritical(false);
-		task.setPercentageComplete(0);
-		task.setPercentageWorkComplete(0);
+		task.setPercentageComplete(80);
+		task.setPercentageWorkComplete(90);
 		task.setConstraintType(ConstraintType.MUST_START_ON);
 		task.setConstraintDate(new Date());
 		task.setLevelAssignments(true);

@@ -148,12 +148,13 @@ public class ProjectServiceImpl implements ProjectService {
 
             //生成临时xml文件
             ProjectWriter writer = new MSPDIWriter();
-            String xmlPath = "D:\\tmp\\开办新公司.xml";
+            long time = System.currentTimeMillis();
+
+            String xmlPath = "D:\\tmp\\开办新公司11"+time+".xml";
             writer.write(pf, xmlPath);
 
             // 将xml文件转换成Mpp文件
-            long time = System.currentTimeMillis();
-            String mppPath = "D:\\tmp\\开办新公司" + time + ".mpp";
+            String mppPath = "D:\\tmp\\test\\开办新公司" + time + ".mpp";
             exportProjectToMpp(xmlPath, mppPath);
 
             // todo 删除xml文件
@@ -184,6 +185,42 @@ public class ProjectServiceImpl implements ProjectService {
 //		activexComponent.invoke("Quit");
     }
 
+    public void writeResourceAssignmentToObj(Project pro, int parentId, Task parentTask){
+
+        Task task = parentTask.addTask();
+        task.setName(pro.getTaskName());
+        task.setDuration(Duration.getInstance(5, TimeUnit.DAYS));
+        task.setStart(pro.getStartDate());
+        task.setFinish(pro.getEndDate());
+        task.setResourceGroup(pro.getResource());
+        task.setOutlineLevel(parentTask.getOutlineLevel() + 1);
+        task.setUniqueID(parentTask.getUniqueID() + 1);
+        task.setID(parentTask.getID() + 1);
+    }
+    //
+//    public void writeResourceAssignmentToObj(Project pro, int parentId, Task parentTask) {
+//
+//        Task task = parentTask.addTask();
+//        task.setName(pro.getTaskName());
+//        // 设置工期
+//        task.setDuration(Duration.getInstance(5, TimeUnit.DAYS));
+//        task.setStart(pro.getStartDate());
+//        task.setFinish(pro.getEndDate());
+//        task.setResourceGroup(pro.getResource());
+//        task.setOutlineLevel(parentTask.getOutlineLevel() + 1);
+//        task.setUniqueID(parentTask.getUniqueID() + 1);
+//        task.setID(parentTask.getID() + 1);
+////        task.setPercentageComplete(30);
+//
+//        //设置前置关系
+////        Task preTask = projectMapper.findProjectById(pro.getPreTask());
+////        Task preTask = new Task();
+////        Relation r=task.addPredecessor(parentTask, RelationType.FINISH_START, null);
+//
+//        // 设置基准线
+////        task.setBaselineStart(pro.getStartDate());
+////        task.setBaselineFinish(pro.getEndDate());
+//    }
     public void writeChildrenTaskToObj(List<Project> projects, int levelNum, Task parentTask, Integer parentId) {
         //首先从第一层开始读取
         List<Project> subProjects = getSubProjects(projects, parentId, levelNum);
@@ -226,29 +263,6 @@ public class ProjectServiceImpl implements ProjectService {
 
     }
 
-    public void writeResourceAssignmentToObj(Project pro, int parentId, Task parentTask) {
-
-        Task task = parentTask.addTask();
-        task.setName(pro.getTaskName());
-        // 设置工期
-        task.setDuration(Duration.getInstance(5, TimeUnit.DAYS));
-        task.setStart(pro.getStartDate());
-        task.setFinish(pro.getEndDate());
-        task.setResourceGroup(pro.getResource());
-        task.setOutlineLevel(parentTask.getOutlineLevel() + 1);
-        task.setUniqueID(parentTask.getUniqueID() + 1);
-        task.setID(parentTask.getID() + 1);
-        task.setPercentageComplete(30);
-
-        //设置前置关系
-//        Task preTask = projectMapper.findProjectById(pro.getPreTask());
-//        Task preTask = new Task();
-//        Relation r=task.addPredecessor(parentTask, RelationType.FINISH_START, null);
-
-        // 设置基准线
-        task.setBaselineStart(pro.getStartDate());
-        task.setBaselineFinish(pro.getEndDate());
-    }
 
     /**
      * 获取子任务列表

@@ -19,7 +19,10 @@ public class ProjectServiceImplTest extends TestCase {
     // 根据mpp文件模版操作文件后保存为xml文件
     @Test
     public void testWriteMppFileToDB() {
-        File file = new File("D:\\tmp\\开办新公司-导出模板.mpp");
+        String pathName = "D:\\tmp\\开办新公司-导出模板.mpp";
+//        String pathName = "D:\\tmp\\项目计划-导出模板.mpp";
+
+        File file = new File(pathName);
         projectService.writeMppFileToDB(null,"100",file);
     }
 

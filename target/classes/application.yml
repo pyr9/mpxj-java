@@ -1,0 +1,22 @@
+server:
+  port: 1111
+
+spring:
+    datasource:
+        name: test
+        url: jdbc:postgresql://localhost:5432/mytest
+        username: postgres
+        password: 123
+        driver-class-name: org.postgresql.Driver
+mybatis:
+  mapper-locations: classpath:mapping/*.xml
+  type-aliases-package: com.winter.model
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+#pagehelper
+pagehelper:
+    helperDialect: mysql
+    reasonable: true
+    supportMethodsArguments: true
+    params: count=countSql

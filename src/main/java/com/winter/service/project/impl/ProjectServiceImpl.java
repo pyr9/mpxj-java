@@ -204,7 +204,7 @@ public class ProjectServiceImpl implements ProjectService {
         Task task = parentTask.addTask();
         // Let's create an alias for TEXT1
         CustomFieldContainer customFields = pf.getCustomFields();
-        CustomField customField = customFields.getCustomField(TaskField.TEXT1);
+        CustomField customField = customFields.getOrCreate(TaskField.TEXT1);
         customField.setAlias("中文描述");
         task.setText(10, "文本10");
         task.setName(pro.getTaskName());
@@ -276,7 +276,7 @@ public class ProjectServiceImpl implements ProjectService {
             List<Project> childrenList = getSubProjects(projects, project.getProjId(), currentLevelNum + 1);
             CustomFieldContainer customFields = pf.getCustomFields();
             customFields.stream().forEach(e -> System.out.println(e.getAlias()));
-            CustomField customField = customFields.getCustomField(TaskField.TEXT1);
+            CustomField customField = customFields.getOrCreate(TaskField.TEXT1);
             System.out.println("aaaaaaaaaaaaaaaaaa"+customField.getAlias());
 
             customField.setAlias("中文描述");

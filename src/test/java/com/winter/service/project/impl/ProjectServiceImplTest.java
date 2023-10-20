@@ -30,7 +30,7 @@ public class ProjectServiceImplTest extends TestCase {
     // xml文件转Mpp文件
     @Test
     public void testExportProjectToMpp() {
-        String xmlPath = "D:\\tmp\\test\\开办新公司.xml";
+        String xmlPath = "D:\\tmp\\Pjt计划样本.xml";
         long time = System.currentTimeMillis();
         String mppPath = "D:\\tmp\\mppTest"+time+".mpp";
         projectService.exportProjectToMpp(xmlPath,mppPath);

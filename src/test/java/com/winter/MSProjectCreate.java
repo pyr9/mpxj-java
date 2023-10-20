@@ -12,8 +12,10 @@ public class MSProjectCreate {
         activexComponent.setProperty("DisplayAlerts", false);
 
         Dispatch projects = activexComponent.getProperty("Projects").toDispatch();
+        String xmlPath = "D:\\tmp\\项目计划-导出模板.xml";
+        //打开Xml文件
+//        Dispatch newProject = Dispatch.call(activexComponent, "FileOpen", xmlPath).toDispatch();
         Dispatch newProject = Dispatch.call(projects, "Add").toDispatch();
-
         try {
             // 获取任务表格
             Dispatch taskTable = Dispatch.get(newProject, "TaskTables").toDispatch();
@@ -26,9 +28,7 @@ public class MSProjectCreate {
             Dispatch.call(columns, "Add", 205520997);
             Dispatch.call(columns, "Add", 188743731, 2, 10 ,"中文描述");
 
-//            String xmlPath = "D:\\tmp\\项目计划-导出模板.xml";
-//            //打开Xml文件
-//            Dispatch.call(newProject, "FileOpen", xmlPath);
+//            Dispatch.call(newProject, "FileOpenEx", xmlPath, false, 0, "", "", "");
 
             // 保存 MPP 文件
             String projectFilePath = "D:\\tmp\\test\\project00466.mpp";
